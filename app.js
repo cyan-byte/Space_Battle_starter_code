@@ -7,35 +7,33 @@ enemy.src = "images/enemy.gif";
 document.querySelector('.enemyImage').appendChild(enemy);
 enemy.style.width = ('256px');
 
-
 class Ship {
-    constructor(shipName, hull, firepower, accuracy){
+    constructor(shipName, health, firepower, accuracy){
     this.shipName = shipName
-    this.hull = hull // hit points
-    this.firepower = firepower // amount of damage done to hull of target with a successful hit
+    this.health = health // hit points
+    this.firepower = firepower // amount of damage done to health of target with a successful hit
     this.accuracy = accuracy // chance btw 0 and 1 that ship will hit target
     }
-
-    attack(target){
-        if(target.hull <= 0){
-            console.log(`${target.shipName} defeated!`);
-            console.log({humanShip, alienShip});
-        }
-        else{
-            console.log(`${target.shipName} took ${damage} damage. Remaining health: ${target.hull}`);
-            console.log({humanShip, alienShip});
+    attack(attacker, defender) {
+        const damage = Math.max(attacker.firepower - defender.health, 0);
+        defender.health -= damage;
+        if(defender.health <= 0) {
+            console.log(`${defender.shipName} destroyed!`);
+        }else {
+            console.log(`The ${attacker.shipName}'s firepower hits the opponent with ${damage} damage. ${defender.shipName} has ${defender.health} health points remaining.`);
         }
     }
 }
+
 class HumanShip extends Ship {
-    constructor (shipName, hull, firepower, accuracy){
-        super(shipName, hull, firepower, accuracy);
+    constructor (shipName, health, firepower, accuracy){
+        super(shipName, health, firepower, accuracy);
     } 
 }
 
 class AlienShip extends Ship {
-    constructor (shipName, hull, firepower, accuracy){
-        super(shipName, hull, firepower, accuracy);
+    constructor (shipName, health, firepower, accuracy){
+        super(shipName, health, firepower, accuracy);
     }
 }
 
@@ -43,70 +41,64 @@ class AlienShip extends Ship {
 const humanShip = new HumanShip("USS Assembly", 20, 5, .7); // instance of HumanShip class
 const alienShip = new AlienShip("Alien Ship", Math.floor(Math.random() * 3) + 3, Math.floor(Math.random() * 2) + 2, Math.floor(Math.random() * .2) + .6);
 
-
-
-humanShip.firepower = humanShip.firepower - alienShip.accuracy; // alienShip's hit
-alienShip.firepower = alienShip.firepower - humanShip.accuracy; // humanShip's hit
-
-humanShip.hull = humanShip.hull - alienShip.firepower; // humanShip's remaining health points
-alienShip.hull = alienShip.hull - humanShip.firepower; // humanShip's remaining health points
-
-function humanHit() {
-    while (humanShip.hull > 0 && alienShip.hull > 0) {
-        humanShip.firepower = humanShip.firepower - alienShip.accuracy;
-        alienShip.firepower = alienShip.firepower - humanShip.accuracy;
-    
-        humanShip.hull = humanShip.hull - alienShip.firepower;
-        alienShip.hull = alienShip.hull - humanShip.firepower;
-        
-    }
-    console.log({humanShip, alienShip});
-
-    
-    if (humanShip.hull > 0) {
-        console.log(`${humanShip.shipName} wins!`);
-        console.log({humanShip, alienShip});
-
-    } else {
-        console.log(`${alienShip.shipName} wins!`);
-        console.log({humanShip, alienShip});
-
-    }
-}
-
-function alienHit() {
-    while (alienShip.hull > 0 && humanShip.hull > 0) {
-        alienShip.firepower = alienShip.firepower - humanShip.accuracy;
-        humanShip.firepower = humanShip.firepower - alienShip.accuracy;
-    
-        alienShip.hull = alienShip.hull - humanShip.firepower;
-        humanShip.hull = humanShip.hull - alienShip.firepower;
-    }
-    
-    if (alienShip.hull > 0) {
-        console.log(`${alienShip.shipName} wins!`);
-    } else {
-        console.log(`${humanShip.shipName} wins!`);
-    }
-}
-
-humanHit()
-alienHit()
-alienHit()
-alienShip.attack(humanShip) // will not run... ?
-
-
-
-
-
-// You could be battling six alien ships, each with unique values.
-
-// Example use of accuracy to determine a hit:
-
-// if (Math.random() < alien[0].accuracy) { // <--- Does this go in the instance?
-// 	console.log('You have been hit!');
-// }
+// alienShip.attack(alienShip, humanShip);
+// humanShip.attack(humanShip, alienShip);
+// alienShip.attack(alienShip, humanShip);
+// humanShip.attack(humanShip, alienShip);
 
 // document.onkeydown = function(e) {
 //     console.log(e);
 // }
+
+const humanStats = document.querySelector('.playerStats');
+humanStats.textContent = '';
+const humanStatsUl = document.createElement('ul');
+const humanHealthLi = document.createElement('li');
+const humanFirepowerLi = document.createElement('li');
+const humanAccuracyLi = document.createElement('li');
+humanHealthLi.textContent = `Health : ${humanShip.health}`;
+humanFirepowerLi.textContent = `Firepower : ${humanShip.firepower}`;
+humanAccuracyLi.textContent = `Accuracy : ${humanShip.accuracy}`;
+
+humanStats.appendChild(humanStatsUl);
+humanStatsUl.appendChild(humanHealthLi);
+humanStatsUl.appendChild(humanFirepowerLi);
+humanStatsUl.appendChild(humanAccuracyLi);
+// humanStats.append(humanHealthLi, humanFirepowerLi, humanAccuracyLi);
+///////////////////////
+const alienStats = document.querySelector('.enemyStats');
+alienStats.textContent = '';
+const alienStatsUl = document.createElement('ul');
+const alienHealthLi = document.createElement('li');
+const alienFirepowerLi = document.createElement('li');
+const alienAccuracyLi = document.createElement('li');
+alienHealthLi.textContent = `Health : ${alienShip.health}`;
+alienFirepowerLi.textContent = `Firepower : ${alienShip.firepower}`;
+alienAccuracyLi.textContent = `Accuracy : ${alienShip.accuracy}`;
+
+alienStats.appendChild(alienStatsUl);
+alienStatsUl.appendChild(alienHealthLi);
+alienStatsUl.appendChild(alienFirepowerLi);
+alienStatsUl.appendChild(alienAccuracyLi);
+const isAlive = Ship.health > 0;
+
+// Game Round
+function gameRound() {
+     while (alienShip.health > 0 && humanShip.health > 0) {
+        humanShip.attack(humanShip, alienShip);
+        if (alienShip.isAlive === false){
+            alert(`You won!`);
+            break;
+        } 
+        alienShip.attack(alienShip, humanShip);
+        if (humanShip.health <= 0) {
+            alert (`You lost!`);
+            break;
+        }
+    }
+}
+gameRound();
+
+if (alienShip.health <= 0) {
+    alert (`${alienShip.shipName} is DEFEATED and CANNOT ATTACK anymore.`)
+}
